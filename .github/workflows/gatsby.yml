@@ -61,7 +61,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gatsby-build-
       - name: Install dependencies
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Build with Gatsby
         env:
           PREFIX_PATHS: 'true'
