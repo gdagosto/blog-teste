@@ -71,3 +71,4 @@ jobs:
         with:
           source-dir: ./public
           deploy-repository: gdagosto/blog-preview
+          token: ${{ secrets.PREVIEW_TOKEN }}
