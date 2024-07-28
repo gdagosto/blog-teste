@@ -1,6 +1,10 @@
 # .github/workflows/preview.yml
 name: Deploy PR previews
 
+env:
+  PREVIEW_REPO: gdagosto/blog-preview
+  PREVIEW_UMBRELLA_PATH: pr-preview
+
 on:
   pull_request:
     types:
@@ -15,6 +19,7 @@ permissions:
   pages: write
   id-token: write
   actions: read
+  pull-requests: write
 
 concurrency: preview-${{ github.ref }}
 
@@ -39,15 +44,10 @@ jobs:
         with:
           node-version: "20"
           cache: "pnpm"
-      - name: Setup Pages
+      - name: Change page link
         if: github.event.action != 'closed'
         id: pages
-        uses: actions/configure-pages@v5
-        with:
-          # Automatically inject pathPrefix in your Gatsby configuration file.
-          #
-          # You may remove this line if you want to manage the configuration yourself.
-          static_site_generator: gatsby
+        run: node ./.scripts/changeConfig.js ${{ env.PREVIEW_REPO }} ${{ env.PREVIEW_UMBRELLA_PATH }} ${{github.event.number}}
       - name: Restore cache
         if: github.event.action != 'closed'
         uses: actions/cache@v4
@@ -70,5 +70,6 @@ jobs:
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./public
-          deploy-repository: gdagosto/blog-preview
+          deploy-repository: ${{ env.PREVIEW_REPO }}
+          umbrella-dir: ${{ env.PREVIEW_UMBRELLA_PATH }}
           token: ${{ secrets.PREVIEW_TOKEN }}
