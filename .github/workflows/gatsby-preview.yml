@@ -71,5 +71,5 @@ jobs:
         with:
           source-dir: ./public
           deploy-repository: ${{ env.PREVIEW_REPO }}
-          umbrella-dir: ${{ env.PREVIEW_UMBRELLA_DIR }}
+          umbrella-dir: ${{ env.PREVIEW_UMBRELLA_PATH }}
           token: ${{ secrets.PREVIEW_TOKEN }}
