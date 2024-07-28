@@ -1,28 +1,22 @@
-# Sample workflow for building and deploying a Gatsby site to GitHub Pages
-#
-# To get started with Gatsby see: https://www.gatsbyjs.com/docs/quick-start/
-#
-name: Deploy Gatsby site to Pages
+# .github/workflows/preview.yml
+name: Deploy PR previews
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+concurrency: preview-${{ github.ref }}
 
 # Default to bash
 defaults:
@@ -37,13 +31,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup PNPM
+        if: github.event.action != 'closed'
         uses: pnpm/action-setup@v4
       - name: Setup Node
+        if: github.event.action != 'closed'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
       - name: Setup Pages
+        if: github.event.action != 'closed'
         id: pages
         uses: actions/configure-pages@v5
         with:
@@ -52,6 +49,7 @@ jobs:
           # You may remove this line if you want to manage the configuration yourself.
           static_site_generator: gatsby
       - name: Restore cache
+        if: github.event.action != 'closed'
         uses: actions/cache@v4
         with:
           path: |
@@ -61,27 +59,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gatsby-build-
       - name: Install dependencies
+        if: github.event.action != 'closed'
         run: pnpm install --frozen-lockfile
       - name: Build with Gatsby
+        if: github.event.action != 'closed'
         env:
           PREFIX_PATHS: 'true'
         run: pnpm run build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
         with:
-          path: ./public
-
-  # Deployment job
-  deploy:
-    environment:
-      name: preview
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          preview: true
-        
+          source-dir: ./public
+          deploy-repository: gdagosto/blog-preview
